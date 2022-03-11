@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="VcsDirectoryMappings">
+    <mapping directory="$PROJECT_DIR$" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/enums" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/functions" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/guessing" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/helloWorld" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/packages-crates-modules" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/references" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/structs" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/variables" vcs="Git" />
+  </component>
+</project>
