@@ -1,5 +1,5 @@
 use rand::Rng;
-use std::io::{self, stdout, Write};
+use std::io::{self, stdin, stdout, Write};
 use std::num::ParseIntError;
 
 const ERROR_READ_LINE: &str = "Failed to read line";
@@ -16,10 +16,10 @@ impl Bounds {
         let mut upper = String::new();
         print!("Lower bound: ");
         stdout().flush();
-        io::stdin().read_line(&mut lower).expect(ERROR_READ_LINE);
+        stdin().read_line(&mut lower).expect(ERROR_READ_LINE);
         print!("Upper bound: ");
         stdout().flush();
-        io::stdin().read_line(&mut upper).expect(ERROR_READ_LINE);
+        stdin().read_line(&mut upper).expect(ERROR_READ_LINE);
         Bounds {
             lower: lower.trim().parse().unwrap_or(0),
             upper: upper.trim().parse().unwrap_or(100),
