@@ -3,11 +3,15 @@
   <component name="NewModuleRootManager">
     <content url="file://$MODULE_DIR$">
       <sourceFolder url="file://$MODULE_DIR$/enums/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/guessing/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/helloWorld/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/packages-crates-modules/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/packages_crates_modules/src" isTestSource="false" />
       <excludeFolder url="file://$MODULE_DIR$/enums/target" />
       <excludeFolder url="file://$MODULE_DIR$/packages-crates-modules/target" />
       <excludeFolder url="file://$MODULE_DIR$/helloWorld/target" />
+      <excludeFolder url="file://$MODULE_DIR$/guessing/target" />
+      <excludeFolder url="file://$MODULE_DIR$/packages_crates_modules/target" />
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
