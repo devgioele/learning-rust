@@ -16,12 +16,14 @@ enum Letter {
 impl Letter {
     const VOWELS: [char; 5] = ['a', 'e', 'i', 'o', 'u'];
 
-    fn from(letter: char) -> Letter {
+    fn from(letter: char) -> Option<Letter> {
         // If the letter is not ASCII, it cannot be a vowel
         if Letter::VOWELS.contains(&letter.to_ascii_lowercase()) {
-            Letter::Vowel(letter)
+            Some(Letter::Vowel(letter))
+        } else if !letter.is_numeric() {
+            Some(Letter::Consonant(letter))
         } else {
-            Letter::Consonant(letter)
+            None
         }
     }
 }
@@ -35,7 +37,14 @@ fn main() {
         io::stdout().flush();
         io::stdin().read_line(&mut text).expect(ERROR_READ_LINE);
         for word in text.split_whitespace() {
-            print!("{}", pig_latin(word));
+            // Print the translated word or the original word, if no translation is possible
+            print!(
+                "{} ",
+                match pig_latin(word) {
+                    Some(translation) => translation,
+                    None => word.to_string(),
+                }
+            )
         }
         println!();
         // Clear string, because `read_line` appends
@@ -46,26 +55,36 @@ fn main() {
 // Returns the pig-latin translation of the given word.
 // If the word is empty, the returned string is empty as well.
 // If the word is a single consonant, the leading hyphen is removed.
-fn pig_latin(word: &str) -> String {
+// If the given word cannot be translated, None is returned.
+fn pig_latin(word: &str) -> Option<String> {
     let mut chars = word.chars();
     let first_char = chars.clone().next();
-    if let Some(c) = first_char {
-        let prefix = match Letter::from(c) {
-            Letter::Consonant(c) => {
-                // Exclude first char from word
-                chars.next();
-                c
+    match first_char {
+        Some(c) => {
+            if contains_numbers(word) {
+                None
+            } else {
+                let prefix = match Letter::from(c) {
+                    Some(Letter::Consonant(_)) | None => {
+                        // Exclude first char from word
+                        chars.next();
+                        c
+                    }
+                    Some(Letter::Vowel(_)) => 'h',
+                };
+                let rem_word = chars.collect::<String>();
+                Some(format!(
+                    "{}{}{}ay",
+                    rem_word,
+                    if rem_word.len() > 0 { "-" } else { "" },
+                    prefix
+                ))
             }
-            _ => 'h',
-        };
-        let rem_word = chars.collect::<String>();
-        format!(
-            "{}{}{}ay ",
-            rem_word,
-            if rem_word.len() > 0 { "-" } else { "" },
-            prefix
-        )
-    } else {
-        "".to_string()
+        }
+        None => Some("".to_string()),
     }
+}
+
+fn contains_numbers(text: &str) -> bool {
+    text.chars().any(|c| c.is_numeric())
 }
