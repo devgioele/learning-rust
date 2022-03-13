@@ -1,3 +1,14 @@
+enum Color {
+    Green = 1,
+    Red = 3,
+    Blue = -1,
+}
+
+enum Box {
+    Black(str),
+    White(str),
+}
+
 fn main() {
     let options = [Some(5), None, Some(-3)];
     for o in options {
