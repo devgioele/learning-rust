@@ -7,11 +7,19 @@
       <sourceFolder url="file://$MODULE_DIR$/helloWorld/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/packages-crates-modules/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/packages_crates_modules/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/collections/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/pig-latin/src" isTestSource="false" />
       <excludeFolder url="file://$MODULE_DIR$/enums/target" />
       <excludeFolder url="file://$MODULE_DIR$/packages-crates-modules/target" />
       <excludeFolder url="file://$MODULE_DIR$/helloWorld/target" />
       <excludeFolder url="file://$MODULE_DIR$/guessing/target" />
       <excludeFolder url="file://$MODULE_DIR$/packages_crates_modules/target" />
+      <excludeFolder url="file://$MODULE_DIR$/collections/target" />
+      <excludeFolder url="file://$MODULE_DIR$/functions/target" />
+      <excludeFolder url="file://$MODULE_DIR$/references/target" />
+      <excludeFolder url="file://$MODULE_DIR$/structs/target" />
+      <excludeFolder url="file://$MODULE_DIR$/variables/target" />
+      <excludeFolder url="file://$MODULE_DIR$/pig-latin/target" />
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
