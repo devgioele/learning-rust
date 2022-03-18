@@ -9,6 +9,8 @@
       <sourceFolder url="file://$MODULE_DIR$/packages_crates_modules/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/collections/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/pig-latin/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/errors/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/generics-traits-lifetimes/src" isTestSource="false" />
       <excludeFolder url="file://$MODULE_DIR$/enums/target" />
       <excludeFolder url="file://$MODULE_DIR$/packages-crates-modules/target" />
       <excludeFolder url="file://$MODULE_DIR$/helloWorld/target" />
@@ -20,6 +22,8 @@
       <excludeFolder url="file://$MODULE_DIR$/structs/target" />
       <excludeFolder url="file://$MODULE_DIR$/variables/target" />
       <excludeFolder url="file://$MODULE_DIR$/pig-latin/target" />
+      <excludeFolder url="file://$MODULE_DIR$/errors/target" />
+      <excludeFolder url="file://$MODULE_DIR$/generics-traits-lifetimes/target" />
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />

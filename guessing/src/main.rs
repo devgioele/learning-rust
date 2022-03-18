@@ -1,13 +1,37 @@
+use crate::utils::Ask;
 use rand::Rng;
-use std::io::{stdin, stdout, Write};
 use utils::Bounds;
-use utils::ERROR_READ_LINE;
+
+pub const ERROR_READ_LINE: &str = "Failed to read line";
 
 mod utils {
     use std::io;
     use std::io::{stdin, stdout, ErrorKind, Write};
 
-    pub const ERROR_READ_LINE: &str = "Failed to read line";
+    pub trait Ask {
+        /// Asks the user for the value as long as the entered value is valid.
+        fn ask(question: &str) -> Result<Self, io::Error>
+        where
+            Self: Sized;
+    }
+
+    impl Ask for i64 {
+        fn ask(question: &str) -> Result<Self, io::Error> {
+            let mut answer = String::new();
+            loop {
+                answer.clear();
+                print!("{}", question);
+                stdout().flush()?;
+                stdin().read_line(&mut answer)?;
+                match answer.trim().parse::<i64>() {
+                    Err(_) => {
+                        println!("I cannot understand this. It should be an integer. Try again!");
+                    }
+                    Ok(v) => return Ok(v),
+                }
+            }
+        }
+    }
 
     pub(crate) struct Bounds {
         lower: i64,
@@ -17,16 +41,8 @@ mod utils {
     impl Bounds {
         pub fn from_user() -> Result<Bounds, io::Error> {
             println!("Choose a range of numbers!");
-            let mut lower = String::new();
-            let mut upper = String::new();
-            print!("Lower bound: ");
-            stdout().flush().unwrap();
-            stdin().read_line(&mut lower).expect(ERROR_READ_LINE);
-            print!("Upper bound: ");
-            stdout().flush().unwrap();
-            stdin().read_line(&mut upper).expect(ERROR_READ_LINE);
-            let lower = lower.trim().parse().unwrap_or(0);
-            let upper = upper.trim().parse().unwrap_or(100);
+            let lower = i64::ask("Lower bound: ")?;
+            let upper = i64::ask("Upper bound: ")?;
             if lower <= upper {
                 Ok(Bounds { lower, upper })
             } else {
@@ -67,30 +83,26 @@ fn main() {
         }
         Ok(bounds) => {
             let secret_number = rand::thread_rng().gen_range(bounds.lower()..=bounds.upper());
-            let attempts = play(&bounds, secret_number);
-            let score = bounds.range() as f64 / attempts as f64;
+            let (attempts, score) = play(&bounds, secret_number);
             println!(
-                "You guessed it! It took you {} attempt{}, getting you a score of {:.2}",
+                "🎊 You guessed it! It took you {} attempt{}, getting you a score of {}!",
                 attempts,
                 if attempts == 1 { "" } else { "s" },
-                format!("{:.2}", score).trim_end_matches(['.', '0'])
+                format!("{:.1}", score).trim_end_matches(['.', '0'])
             );
         }
     }
 }
 
-fn play(bounds: &Bounds, secret_number: i64) -> u32 {
+fn play(bounds: &Bounds, secret_number: i64) -> (u32, f64) {
     let mut attempts = 0u32;
-    let mut guess = String::new();
     println!("Guess the number!");
     loop {
-        print!("Your guess: ");
-        stdout().flush().unwrap();
-        stdin().read_line(&mut guess).expect(ERROR_READ_LINE);
+        let guess = i64::ask("Your guess: ");
         attempts += 1;
         // Parse string to number and print msg accordingly
-        match guess.trim().parse::<i64>() {
-            Err(_) => println!("This is not a number."),
+        match guess {
+            Err(_) => println!("Something went wrong while reading your input!"),
             Ok(guessed_number) if guessed_number == secret_number => break,
             Ok(guessed_number) if !bounds.contains(guessed_number) => {
                 println!("This guess is out of bounds.")
@@ -104,8 +116,9 @@ fn play(bounds: &Bounds, secret_number: i64) -> u32 {
                 }
             ),
         }
-        // Clear string, because read_line appends
-        guess.clear();
     }
-    attempts
+    // Compare the number of attempts with how many divisions a binary search would have taken
+    // in the worst case
+    let score = (bounds.range() as f64).log(2.0) / attempts as f64 * 100.0;
+    (attempts, score)
 }
