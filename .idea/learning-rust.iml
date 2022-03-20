@@ -11,6 +11,8 @@
       <sourceFolder url="file://$MODULE_DIR$/pig-latin/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/errors/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/generics-traits-lifetimes/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/minigrep/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/tests/src" isTestSource="false" />
       <excludeFolder url="file://$MODULE_DIR$/enums/target" />
       <excludeFolder url="file://$MODULE_DIR$/packages-crates-modules/target" />
       <excludeFolder url="file://$MODULE_DIR$/helloWorld/target" />
@@ -24,6 +26,8 @@
       <excludeFolder url="file://$MODULE_DIR$/pig-latin/target" />
       <excludeFolder url="file://$MODULE_DIR$/errors/target" />
       <excludeFolder url="file://$MODULE_DIR$/generics-traits-lifetimes/target" />
+      <excludeFolder url="file://$MODULE_DIR$/tests/target" />
+      <excludeFolder url="file://$MODULE_DIR$/minigrep/target" />
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />

@@ -30,6 +30,7 @@ impl Shape {
 }
 
 fn main() {
+    let x = String::new();
     let p1 = Pair::new(9, 4);
     p1.cmp_display();
     let _p2 = Pair::new(Shape::new(), Shape::new());
