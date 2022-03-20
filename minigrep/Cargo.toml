@@ -2,7 +2,14 @@
 name = "minigrep"
 version = "0.1.0"
 edition = "2021"
+description = "A simplified and rustified version of the well-known grep CLI utility."
+license = "MIT"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
+
+
+# Default opt-evel for dev is 0 (= min) and for release is 3 (= max)
+[profile.dev]
+opt-level = 1
