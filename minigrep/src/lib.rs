@@ -55,9 +55,9 @@ pub fn search_case_insensitive<'a>(query: &str, contents: &'a str) -> Vec<&'a st
 }
 
 pub struct Config {
-    pub query: String,
-    pub filename: String,
-    pub case_sensitive: bool,
+    query: String,
+    filename: String,
+    case_sensitive: bool,
 }
 
 impl Config {
