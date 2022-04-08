@@ -23,7 +23,7 @@ mod utils {
                 print!("{}", question);
                 stdout().flush()?;
                 stdin().read_line(&mut answer)?;
-                match answer.trim().parse::<i64>() {
+                match answer.trim().parse() {
                     Err(_) => {
                         println!("I cannot understand this. It should be an integer. Try again!");
                     }

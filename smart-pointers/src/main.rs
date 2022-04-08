@@ -1,4 +1,6 @@
+use crate::List::{Cons, Nil};
 use std::ops::Deref;
+use std::rc::Rc;
 
 struct MyBox<T>(T);
 
@@ -19,7 +21,13 @@ impl<T> Deref for MyBox<T> {
     }
 }
 
+enum List {
+    Cons(i32, Rc<List>),
+    Nil,
+}
+
 fn main() {
+    //*** Using a custom smart pointer
     let x = 5;
     let y = MyBox::new(x);
 
@@ -31,6 +39,19 @@ fn main() {
     assert_eq!(5, *y);
     // Why does this work?
     assert_eq!(&5, y.deref());
+
+    //*** Using the Reference Counter type
+    let a = Rc::new(Cons(5, Rc::new(Cons(10, Rc::new(Nil)))));
+    let b = Cons(3, Rc::clone(&a));
+    let _c = Cons(3, Rc::clone(&a));
+    // Overwriting the second element of list `b`
+    if let Cons(_, mut l2) = b {
+        l2 = Rc::new(Cons(-7, Rc::new(Nil)));
+        // Reading the first item of the newly inserted list
+        if let Cons(item, _) = *l2 {
+            println!("First item of newly inserted list: {}", item);
+        }
+    }
 }
 
 // fn main() {
