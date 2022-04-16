@@ -8,55 +8,60 @@ pub mod sort {
     /// A data set with an odd number of values:
     /// ```
     /// use quicksort::sort::median;
-    /// let values = vec![1.0,3.0,3.0,6.0,7.0,8.0,9.0];
-    /// let median = median(&values[..]);
+    /// let vec = vec![1.0,3.0,3.0,6.0,7.0,8.0,9.0];
+    /// let median = median(&vec[..]);
     /// assert_eq!(median, 6.0);
     /// ```
     ///
     /// A data set with an even number of values:
     /// ```
     /// use quicksort::sort::median;
-    /// let values = vec![1.0,2.0,3.0,4.0,5.0,6.0,8.0,9.0];
-    /// let median = median(&values[..]);
+    /// let vec = vec![1.0,2.0,3.0,4.0,5.0,6.0,8.0,9.0];
+    /// let median = median(&vec[..]);
     /// assert_eq!(median, 4.5);
     /// ```
-    pub fn median(values: &[f64]) -> f64 {
-        let len = values.len();
+    pub fn median(vec: &[f64]) -> f64 {
+        let len = vec.len();
         return if len % 2 == 0 {
-            (values[len / 2 - 1] + values[len / 2]) / 2f64
+            (vec[len / 2 - 1] + vec[len / 2]) / 2f64
         } else {
-            values[(len + 1) / 2 - 1]
+            vec[(len + 1) / 2 - 1]
         };
     }
 
-    pub fn median_rec(values: &[f64], degree: u32) -> f64 {
-        let len = values.len();
+    fn swap(vec: &mut [f64], a: usize, b: usize) {
+        let old_a = vec[a];
+        vec[a] = vec[b];
+        vec[b] = old_a;
+    }
 
-        // If there are not enough elements
-        /*
-        degree   | values.len()
-        -----------------------
-        1        | >= 1 = 3^0
-        2        | >= 3 = 3^1
-        3        | >= 9 = 3^2
-         */
-        if len < 3usize.pow(degree - 1) {
-            panic!(
-                "Not enough elements to compute the median of degree {}!",
-                degree
-            );
+    fn partition_hoare(vec: &mut [f64]) -> usize {
+        let mut left = -1;
+        let mut right = vec.len();
+        let pivot = vec[vec.len() / 2];
+
+        loop {
+            loop {
+                left += 1;
+                if vec[left] < pivot {
+                    break;
+                }
+            }
+
+            loop {
+                right -= 1;
+                if vec[right] > pivot {
+                    break;
+                }
+            }
+
+            if left >= right {
+                break;
+            }
+            swap(vec, left, right);
         }
 
-        // If base case reached
-        if degree == 1 {
-            return median(values);
-        }
-        // Continue by induction
-        return median(&[
-            median_rec(&values[0..len / 3], degree - 1),
-            median_rec(&values[len / 3..2 * len / 3], degree - 1),
-            median_rec(&values[2 * len / 3..len], degree - 1),
-        ]);
+        return left;
     }
 }
 
@@ -167,17 +172,6 @@ pub mod threads {
 
 #[cfg(test)]
 mod tests {
-    use crate::sort::{median, median_rec};
-
     #[test]
-    fn median_base_case_even() {
-        let values = vec![1.0, 2.0, 3.7, 4.0, 5.0, 6.0, 8.0, 9.0];
-        assert_eq!(median(&values), median_rec(&values, 1));
-    }
-
-    #[test]
-    fn median_base_case_odd() {
-        let values = vec![1.0, 3.0, 4.0, 5.1, 6.0, 8.0, 9.0];
-        assert_eq!(median(&values), median_rec(&values, 1));
-    }
+    fn test1() {}
 }
