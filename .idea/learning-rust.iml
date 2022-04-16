@@ -14,6 +14,8 @@
       <sourceFolder url="file://$MODULE_DIR$/minigrep/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/tests/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/smart-pointers/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/concurrency/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/quicksort/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/reference-cycles/src" isTestSource="false" />
       <excludeFolder url="file://$MODULE_DIR$/enums/target" />
       <excludeFolder url="file://$MODULE_DIR$/packages-crates-modules/target" />
@@ -32,6 +34,8 @@
       <excludeFolder url="file://$MODULE_DIR$/minigrep/target" />
       <excludeFolder url="file://$MODULE_DIR$/smart-pointers/target" />
       <excludeFolder url="file://$MODULE_DIR$/reference-cycles/target" />
+      <excludeFolder url="file://$MODULE_DIR$/concurrency/target" />
+      <excludeFolder url="file://$MODULE_DIR$/quicksort/target" />
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
