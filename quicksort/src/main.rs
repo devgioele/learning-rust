@@ -1,7 +1,8 @@
-fn main() {
-    let values: Vec<f64> = vec![1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 8.0, 9.0];
+mod lib;
+use lib::sort::quicksort;
 
-    // TODO:
-    // 1. Start the sorting
-    // 2. Wait for the sorting to complete
+fn main() {
+    let mut vec: Vec<f64> = vec![1.0, 9.7, 3.4, 4.0, -3.14];
+    quicksort(&mut vec);
+    assert_eq!(vec, [-3.14, 1.0, 3.4, 4.0, 9.7]);
 }

@@ -40,10 +40,7 @@ pub mod sort {
     /// returns: index of the pivot, such that the left partition is <= the pivot and
     /// the right partition is > the pivot.
     fn partition_hoare(vec: &mut [f64], low: usize, high: usize) -> usize {
-        let pivot = vec[low + (high - low + 1) / 2];
-
-        println!("pivot = {}", pivot);
-
+        let pivot = vec[(high + low) / 2];
         // Set indices taking possible overflows into account
         let (mut left, mut skip_left) = if low == 0 {
             (low, true)
@@ -55,32 +52,26 @@ pub mod sort {
         } else {
             (high + 1, false)
         };
-
+        // Scan from outside inwards
         loop {
             loop {
-                // Do not decrement if `left` could not be started outside the range,
-                // because `low` is on the boundary of `usize`
-                // Skip if first_left && low == 0
-                // Do it if !first_left || low != 0
+                // Do not increment `left` if not necessary at the first iteration
                 if skip_left {
                     skip_left = false;
                 } else {
                     left += 1;
                 }
-                println!("left = {}, vec[left] = {}", left, vec[left]);
                 if vec[left] >= pivot {
                     break;
                 }
             }
             loop {
-                // Do not decrement if `right` could not be started outside the range,
-                // because `high` is on the boundary of `usize`
+                // Do not decrement `right` if not necessary at the first iteration
                 if skip_right {
                     skip_right = false;
                 } else {
                     right -= 1;
                 }
-                println!("right = {}, vec[right] = {}", right, vec[right]);
                 if vec[right] <= pivot {
                     break;
                 }
@@ -93,22 +84,15 @@ pub mod sort {
         right
     }
 
-    fn quicksort_rec(vec: &mut [f64], left: usize, right: usize) {
+    fn quicksort_rec(vec: &mut [f64], low: usize, high: usize) {
         // Base case
-        if left >= right {
+        if low >= high {
             return;
         }
         // Continue by induction
-        let pivot = partition_hoare(vec, left, right);
-        println!(
-            "partitions = [{}, {}] [{}, {}]",
-            left,
-            pivot,
-            pivot + 1,
-            right
-        );
-        quicksort_rec(vec, left, pivot);
-        quicksort_rec(vec, pivot + 1, right);
+        let pivot = partition_hoare(vec, low, high);
+        quicksort_rec(vec, low, pivot);
+        quicksort_rec(vec, pivot + 1, high);
     }
 
     /// Unstable sorting of the given vector slice.
@@ -150,7 +134,7 @@ pub mod sort {
             fn hoare_even_sorted() {
                 let mut vec = vec![1.0, 2.4, 3.0, 7.0];
                 let pivot = partition_hoare_whole(&mut vec);
-                assert_eq!(pivot, 2);
+                assert_eq!(pivot, 1);
                 assert_eq!(vec, [1.0, 2.4, 3.0, 7.0]);
             }
 
@@ -158,26 +142,7 @@ pub mod sort {
             fn hoare_even_sorted_slice() {
                 let mut vec = vec![1.0, 2.4, 3.0, 7.0, 16.4, 902.1, -703.2, 9.2];
                 let pivot = partition_hoare(&mut vec, 1, 4);
-                /*
-                Execution steps:
-
-                left = 1
-                left value = 2.4
-                right = 4
-                right value = 16.4
-                length of range = right - left + 1 = 4 - 1 + 1 = 4
-                pivot = left + (length of range) / 2 = 1 + 4 / 2 = 3
-
-                pivot value = 7.0
-
-                after iter 1:
-                left = 3
-                right = 3
-                break
-
-                return 3
-                 */
-                assert_eq!(pivot, 3);
+                assert_eq!(pivot, 2);
                 assert_eq!(vec, [1.0, 2.4, 3.0, 7.0, 16.4, 902.1, -703.2, 9.2]);
             }
 
