@@ -35,65 +35,215 @@ pub mod sort {
         vec[b] = old_a;
     }
 
-    fn partition_hoare(vec: &mut [f64], mut left: usize, mut right: usize) -> usize {
-        let pivot = vec[vec.len() / 2];
+    /// Unstable partitioning algorithm.
+    ///
+    /// returns: index of the pivot, such that the left partition is <= the pivot and
+    /// the right partition is > the pivot. TODO: check boundaries of partitions
+    fn partition_hoare(vec: &mut [f64], low: usize, high: usize) -> usize {
+        let pivot = vec[low + (high - low + 1) / 2];
+
+        println!("pivot = {}", pivot);
+
+        // Set indices taking possible overflows into account
+        let (mut left, mut skip_left) = if low == 0 {
+            (low, true)
+        } else {
+            (low - 1, false)
+        };
+        let (mut right, mut skip_right) = if high == usize::MAX {
+            (high, true)
+        } else {
+            (high + 1, false)
+        };
 
         loop {
-            while vec[left] < pivot {
-                left += 1;
+            loop {
+                // Do not decrement if `left` could not be started outside the range,
+                // because `low` is on the boundary of `usize`
+                // Skip if first_left && low == 0
+                // Do it if !first_left || low != 0
+                if skip_left {
+                    skip_left = false;
+                } else {
+                    left += 1;
+                }
+                println!("left = {}, vec[left] = {}", left, vec[left]);
+                if vec[left] >= pivot {
+                    break;
+                }
             }
-            while vec[right] > pivot {
-                right -= 1;
+            loop {
+                // Do not decrement if `right` could not be started outside the range,
+                // because `high` is on the boundary of `usize`
+                if skip_right {
+                    skip_right = false;
+                } else {
+                    right -= 1;
+                }
+                println!("right = {}, vec[right] = {}", right, vec[right]);
+                if vec[right] <= pivot {
+                    break;
+                }
             }
             if left >= right {
                 break;
             }
             swap(vec, left, right);
         }
+        right
+    }
 
-        return left;
+    fn quicksort_rec(vec: &mut [f64], left: usize, right: usize) {
+        // Base case
+        if left >= right {
+            return;
+        }
+        // Continue by induction
+        let pivot = partition_hoare(vec, left, right);
+        println!(
+            "partitions = [{}, {}] [{}, {}]",
+            left,
+            pivot,
+            pivot + 1,
+            right
+        );
+        quicksort_rec(vec, left, pivot);
+        quicksort_rec(vec, pivot + 1, right);
+    }
+
+    /// Unstable sorting of the given vector slice.
+    pub fn quicksort(vec: &mut [f64]) {
+        let len = vec.len();
+        if len > 0 {
+            quicksort_rec(vec, 0, len - 1);
+        }
     }
 
     #[cfg(test)]
     mod tests {
-        use crate::sort;
+        use super::*;
 
-        fn partition_hoare(vec: &mut [f64]) -> usize {
-            let left = 0;
-            let right = vec.len() - 1;
-            sort::partition_hoare(vec, left, right)
+        mod partition {
+            use super::*;
+
+            fn partition_hoare_whole(vec: &mut [f64]) -> usize {
+                partition_hoare(vec, 0, vec.len() - 1)
+            }
+
+            #[test]
+            fn hoare_one() {
+                let mut vec = vec![-3.3];
+                let pivot = partition_hoare_whole(&mut vec);
+                assert_eq!(pivot, 0);
+                assert_eq!(vec, [-3.3]);
+            }
+
+            #[test]
+            fn hoare_two_unsorted() {
+                let mut vec = vec![9.0, 8.0];
+                let pivot = partition_hoare_whole(&mut vec);
+                assert_eq!(pivot, 0);
+                assert_eq!(vec, [8.0, 9.0]);
+            }
+
+            #[test]
+            fn hoare_even_sorted() {
+                let mut vec = vec![1.0, 2.4, 3.0, 7.0];
+                let pivot = partition_hoare_whole(&mut vec);
+                assert_eq!(pivot, 2);
+                assert_eq!(vec, [1.0, 2.4, 3.0, 7.0]);
+            }
+
+            #[test]
+            fn hoare_even_sorted_slice() {
+                let mut vec = vec![1.0, 2.4, 3.0, 7.0, 16.4, 902.1, -703.2, 9.2];
+                let pivot = partition_hoare(&mut vec, 1, 4);
+                /*
+                Execution steps:
+
+                left = 1
+                left value = 2.4
+                right = 4
+                right value = 16.4
+                length of range = right - left + 1 = 4 - 1 + 1 = 4
+                pivot = left + (length of range) / 2 = 1 + 4 / 2 = 3
+
+                pivot value = 7.0
+
+                after iter 1:
+                left = 3
+                right = 3
+                break
+
+                return 3
+                 */
+                assert_eq!(pivot, 3);
+                assert_eq!(vec, [1.0, 2.4, 3.0, 7.0, 16.4, 902.1, -703.2, 9.2]);
+            }
+
+            #[test]
+            fn hoare_equal() {
+                let mut vec = vec![3.0, 3.0, 3.0];
+                let pivot = partition_hoare_whole(&mut vec);
+                assert_eq!(pivot, 1);
+                assert_eq!(vec, [3.0, 3.0, 3.0]);
+            }
+
+            #[test]
+            fn hoare_odd_sorted() {
+                let mut vec = vec![2.3, 3.0, 4.0];
+                let pivot = partition_hoare_whole(&mut vec);
+                assert_eq!(pivot, 1);
+                assert_eq!(vec, [2.3, 3.0, 4.0]);
+            }
+
+            #[test]
+            fn hoare_even_unsorted() {
+                let mut vec = vec![1.0, 7.1, 2.2, 8.0];
+                let pivot = partition_hoare_whole(&mut vec);
+                assert_eq!(pivot, 1);
+                assert_eq!(vec, [1.0, 2.2, 7.1, 8.0]);
+            }
+
+            #[test]
+            fn hoare_odd_unsorted() {
+                let mut vec = vec![9.2, 3.1, 4.0];
+                let pivot = partition_hoare_whole(&mut vec);
+                assert_eq!(pivot, 0);
+                assert_eq!(vec, [3.1, 9.2, 4.0]);
+            }
         }
 
         #[test]
-        fn hoare_even_sorted() {
-            let mut vec = vec![1.0, 2.4, 3.0, 7.0];
-            let pivot = partition_hoare(&mut vec);
-            assert_eq!(pivot, 2);
-            assert_eq!(vec, [1.0, 2.4, 3.0, 7.0]);
+        fn quicksort_even_sorted() {
+            let mut vec: Vec<f64> = vec![1.0, 9.7, 3.4, 4.0];
+            quicksort(&mut vec);
+            assert_eq!(vec, [1.0, 3.4, 4.0, 9.7]);
         }
 
         #[test]
-        fn hoare_odd_sorted() {
-            let mut vec = vec![2.3, 3.0, 4.0];
-            let pivot = partition_hoare(&mut vec);
-            assert_eq!(pivot, 1);
-            assert_eq!(vec, [2.3, 3.0, 4.0]);
+        fn quicksort_odd_sorted() {
+            let mut vec: Vec<f64> = vec![1.0, 9.7, 3.4, 4.0, -3.14];
+            quicksort(&mut vec);
+            assert_eq!(vec, [-3.14, 1.0, 3.4, 4.0, 9.7]);
         }
 
         #[test]
-        fn hoare_even_unsorted() {
-            let mut vec = vec![1.0, 7.1, 2.2, 8.0];
-            let pivot = partition_hoare(&mut vec);
-            assert_eq!(pivot, 1);
-            assert_eq!(vec, [1.0, 2.2, 7.1, 8.0]);
+        fn quicksort_even_sorted_concurrent() {
+            let vec: Vec<f64> = vec![1.0, 9.7, 3.4, 4.0];
+
+            // TODO:
+            // 1. Start the sorting
+            // 2. Wait for the sorting to complete
         }
 
         #[test]
-        fn hoare_odd_unsorted() {
-            let mut vec = vec![9.2, 3.1, 4.0];
-            let pivot = partition_hoare(&mut vec);
-            assert_eq!(pivot, 0);
-            assert_eq!(vec, [3.1, 9.2, 4.0]);
+        fn quicksort_odd_sorted_concurrent() {
+            let vec: Vec<f64> = vec![1.0, 9.7, 3.4, 4.0, -3.14];
+
+            // TODO:
+            // 1. Start the sorting
+            // 2. Wait for the sorting to complete
         }
     }
 }
