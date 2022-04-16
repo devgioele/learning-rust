@@ -35,26 +35,16 @@ pub mod sort {
         vec[b] = old_a;
     }
 
-    fn partition_hoare(vec: &mut [f64]) -> usize {
-        let mut left = -1;
-        let mut right = vec.len();
+    fn partition_hoare(vec: &mut [f64], mut left: usize, mut right: usize) -> usize {
         let pivot = vec[vec.len() / 2];
 
         loop {
-            loop {
+            while vec[left] < pivot {
                 left += 1;
-                if vec[left] < pivot {
-                    break;
-                }
             }
-
-            loop {
+            while vec[right] > pivot {
                 right -= 1;
-                if vec[right] > pivot {
-                    break;
-                }
             }
-
             if left >= right {
                 break;
             }
@@ -62,6 +52,49 @@ pub mod sort {
         }
 
         return left;
+    }
+
+    #[cfg(test)]
+    mod tests {
+        use crate::sort;
+
+        fn partition_hoare(vec: &mut [f64]) -> usize {
+            let left = 0;
+            let right = vec.len() - 1;
+            sort::partition_hoare(vec, left, right)
+        }
+
+        #[test]
+        fn hoare_even_sorted() {
+            let mut vec = vec![1.0, 2.4, 3.0, 7.0];
+            let pivot = partition_hoare(&mut vec);
+            assert_eq!(pivot, 2);
+            assert_eq!(vec, [1.0, 2.4, 3.0, 7.0]);
+        }
+
+        #[test]
+        fn hoare_odd_sorted() {
+            let mut vec = vec![2.3, 3.0, 4.0];
+            let pivot = partition_hoare(&mut vec);
+            assert_eq!(pivot, 1);
+            assert_eq!(vec, [2.3, 3.0, 4.0]);
+        }
+
+        #[test]
+        fn hoare_even_unsorted() {
+            let mut vec = vec![1.0, 7.1, 2.2, 8.0];
+            let pivot = partition_hoare(&mut vec);
+            assert_eq!(pivot, 1);
+            assert_eq!(vec, [1.0, 2.2, 7.1, 8.0]);
+        }
+
+        #[test]
+        fn hoare_odd_unsorted() {
+            let mut vec = vec![9.2, 3.1, 4.0];
+            let pivot = partition_hoare(&mut vec);
+            assert_eq!(pivot, 0);
+            assert_eq!(vec, [3.1, 9.2, 4.0]);
+        }
     }
 }
 
@@ -85,7 +118,7 @@ pub mod threads {
 
     pub struct Pool<T> {
         txs: Vec<Sender<T>>,
-        threads: Vec<JoinHandle<()>>,
+        pub threads: Vec<JoinHandle<()>>,
         state: Arc<PoolState>,
     }
 
@@ -168,10 +201,4 @@ pub mod threads {
             }
         }
     }
-}
-
-#[cfg(test)]
-mod tests {
-    #[test]
-    fn test1() {}
 }
