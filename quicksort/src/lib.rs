@@ -38,7 +38,7 @@ pub mod sort {
     /// Unstable partitioning algorithm.
     ///
     /// returns: index of the pivot, such that the left partition is <= the pivot and
-    /// the right partition is > the pivot. TODO: check boundaries of partitions
+    /// the right partition is > the pivot.
     fn partition_hoare(vec: &mut [f64], low: usize, high: usize) -> usize {
         let pivot = vec[low + (high - low + 1) / 2];
 
