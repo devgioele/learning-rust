@@ -1,9 +1,7 @@
-extern crate threadpool;
+extern crate scoped_threadpool;
 
 pub mod sort {
-    use std::sync::mpsc::channel;
-    use std::sync::Mutex;
-    use threadpool::ThreadPool;
+    use scoped_threadpool::Pool;
 
     /// Computes the media for a given arrtor of numbers.
     /// The media is the value separating the higher half from
@@ -107,37 +105,32 @@ pub mod sort {
         quicksort_rec(arr, 0, arr.len() - 1);
     }
 
-    fn quicksort_concurrent_rec(pool: &'static Mutex<ThreadPool>, arr: &'static mut [f64]) {
+    fn quicksort_concurrent_rec(pool: &mut Pool, arr: &mut [f64]) {
         let low = 0;
         let high = arr.len() - 1;
         // Partition
         let pivot = partition_hoare(arr, low, high);
         // Split the array without copying it (uses unsafe code under the hood)
         let (left, right) = arr.split_at_mut(pivot + 1);
-        // Setup message passing channel
-        let (tx, rx) = channel();
         // Continue by induction
-        if low < pivot {
-            let tx = tx.clone();
-            pool.lock().unwrap().execute(move || {
-                quicksort_concurrent_rec(pool, left);
-                tx.send(1).unwrap();
-            });
-        }
-        if pivot + 1 < high {
-            let tx = tx.clone();
-            pool.lock().unwrap().execute(move || {
-                quicksort_concurrent_rec(pool, right);
-                tx.send(1).unwrap();
-            });
-        }
-        // Wait for the threads to finish
-        rx.iter().take(2).for_each(drop);
+        pool.scoped(|scope| {
+            if low < pivot {
+                scope.execute(move || {
+                    quicksort_concurrent_rec(pool, left);
+                });
+            }
+            if pivot + 1 < high {
+                scope.execute(move || {
+                    quicksort_concurrent_rec(pool, right);
+                });
+            }
+        });
     }
 
-    pub fn quicksort_concurrent(pool: &'static Mutex<ThreadPool>, arr: &'static mut [f64]) {
-        quicksort_concurrent_rec(pool, arr);
-        pool.lock().unwrap().join();
+    pub fn quicksort_concurrent(pool: &mut Pool, arr: &mut [f64]) {
+        if arr.len() > 1 {
+            quicksort_concurrent_rec(pool, arr);
+        }
     }
 
     #[cfg(test)]
