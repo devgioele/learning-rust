@@ -2,6 +2,7 @@ use crate::List::{Cons, Nil};
 use std::ops::Deref;
 use std::rc::Rc;
 
+// A tuple with 1 element
 struct MyBox<T>(T);
 
 impl<T> MyBox<T> {
@@ -37,7 +38,8 @@ fn main() {
     // necessary, because `deref` returns a reference to the
     // value.
     assert_eq!(5, *y);
-    // Why does this work?
+    // This assertion holds, because `5` is a constant hardcoded into the program
+    // and all references to `5` are going to point to the same memory
     assert_eq!(&5, y.deref());
 
     //*** Using the Reference Counter type
