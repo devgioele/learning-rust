@@ -107,39 +107,36 @@ pub mod sort {
         quicksort_rec(arr, 0, arr.len() - 1);
     }
 
-    fn quicksort_concurrent_rec(
-        pool: &'static Mutex<ThreadPool>,
-        arr: &'static mut [f64],
-        low: usize,
-        high: usize,
-    ) {
-        // Base case
-        if low >= high {
-            return;
-        }
-        // Continue by induction
+    fn quicksort_concurrent_rec(pool: &'static Mutex<ThreadPool>, arr: &'static mut [f64]) {
+        let low = 0;
+        let high = arr.len() - 1;
+        // Partition
         let pivot = partition_hoare(arr, low, high);
+        // Split the array without copying it (uses unsafe code under the hood)
+        let (left, right) = arr.split_at_mut(pivot + 1);
+        // Setup message passing channel
         let (tx, rx) = channel();
-        {
+        // Continue by induction
+        if low < pivot {
             let tx = tx.clone();
             pool.lock().unwrap().execute(move || {
-                quicksort_concurrent_rec(pool, arr, low, pivot);
-                tx.send(1);
+                quicksort_concurrent_rec(pool, left);
+                tx.send(1).unwrap();
             });
         }
-        {
+        if pivot + 1 < high {
             let tx = tx.clone();
             pool.lock().unwrap().execute(move || {
-                quicksort_concurrent_rec(pool, arr, pivot + 1, high);
-                tx.send(1);
+                quicksort_concurrent_rec(pool, right);
+                tx.send(1).unwrap();
             });
         }
         // Wait for the threads to finish
-        rx.iter().take(2).collect::<Vec<i32>>();
+        rx.iter().take(2).for_each(drop);
     }
 
     pub fn quicksort_concurrent(pool: &'static Mutex<ThreadPool>, arr: &'static mut [f64]) {
-        quicksort_concurrent_rec(pool, arr, 0, arr.len() - 1);
+        quicksort_concurrent_rec(pool, arr);
         pool.lock().unwrap().join();
     }
 
