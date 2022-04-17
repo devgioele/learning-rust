@@ -2,6 +2,44 @@ pub mod sort {
     use rayon::join;
     pub use rayon::prelude::*;
 
+    fn median(arr: &mut [f64]) -> f64 {
+        let len = arr.len();
+        // Comparing two `f64` is not always possible because `NaN != NaN`,
+        // but we can assume here that `NaN` does not exist
+        arr.sort_by(|a, b| a.partial_cmp(b).unwrap());
+        return if len % 2 == 0 {
+            (arr[len / 2 - 1] + arr[len / 2]) / 2.0
+        } else {
+            arr[(len + 1) / 2 - 1]
+        };
+    }
+
+    fn med3(arr: &mut [f64]) -> f64 {
+        let len = arr.len();
+        let med3 = median(&mut [arr[0], arr[len / 2], arr[len - 1]]);
+        med3
+    }
+
+    fn ninther(arr: &mut [f64]) -> f64 {
+        let len = arr.len();
+        med3(&mut [
+            med3(&mut arr[0..len / 3]),
+            med3(&mut arr[len / 3..2 * len / 3]),
+            med3(&mut arr[2 * len / 3..len]),
+        ])
+    }
+
+    fn pivot_hoare(arr: &mut [f64]) -> f64 {
+        let len = arr.len();
+        if len > 9 {
+            ninther(arr)
+        } else if len > 3 {
+            med3(arr)
+        } else {
+            median(arr)
+        }
+    }
+
     fn swap(arr: &mut [f64], a: usize, b: usize) {
         let old_a = arr[a];
         arr[a] = arr[b];
@@ -13,7 +51,7 @@ pub mod sort {
     /// Return the index of the pivot, such that the left partition is <= the
     /// pivot and the right partition is > the pivot.
     fn partition_hoare(arr: &mut [f64], low: usize, high: usize) -> usize {
-        let pivot = arr[(high + low) / 2];
+        let pivot = pivot_hoare(arr);
         // Set indices taking possible overflows into account
         let (mut left, mut skip_left) = if low == usize::MIN {
             (low, true)
@@ -111,6 +149,36 @@ pub mod sort {
 
             fn partition_hoare_whole(arr: &mut [f64]) -> usize {
                 partition_hoare(arr, 0, arr.len() - 1)
+            }
+
+            #[test]
+            fn median_one() {
+                let mut arr = [2.3];
+                assert_eq!(median(&mut arr), 2.3);
+            }
+
+            #[test]
+            fn median_more_unsorted() {
+                let mut arr = [2.3, 7.0, -4.0];
+                assert_eq!(median(&mut arr), 2.3);
+            }
+
+            #[test]
+            fn med3_three_sorted() {
+                let mut arr = [1.0, 2.3, 5.0];
+                assert_eq!(med3(&mut arr), 2.3);
+            }
+
+            #[test]
+            fn med3_three_unsorted() {
+                let mut arr = [2.0, 1.0, 5.0];
+                assert_eq!(med3(&mut arr), 2.0);
+            }
+
+            #[test]
+            fn ninther_nine() {
+                let mut arr = [3.0, 1.0, 4.0, 4.0, 5.0, 9.0, 9.0, 8.0, 2.0];
+                assert_eq!(ninther(&mut arr), 5.0);
             }
 
             #[test]
