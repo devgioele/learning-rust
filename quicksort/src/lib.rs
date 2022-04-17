@@ -69,7 +69,8 @@ pub mod sort {
         quicksort_seq_rec(arr, pivot + 1, high);
     }
 
-    /// Unstable sorting of the given array.
+    /// Sorts the given array sequentially.
+    /// Performs an unstable sort.
     pub fn quicksort_seq(arr: &mut [f64]) {
         quicksort_seq_rec(arr, 0, arr.len() - 1);
     }
@@ -77,6 +78,7 @@ pub mod sort {
     /// Sorts the given array using potential parallelism.
     /// This means that at least 1 thread is used and further threads might
     /// be used if they are available and idle.
+    /// Performs an unstable sort.
     ///
     /// # Examples
     ///
@@ -93,11 +95,10 @@ pub mod sort {
         if low >= high {
             return;
         }
-        // Partition
+        // Continue by induction
         let pivot = partition_hoare(arr, low, high);
         // Split the array without copying it (uses unsafe code under the hood)
         let (left, right) = arr.split_at_mut(pivot + 1);
-        // Continue by induction
         join(|| quicksort(left), || quicksort(right));
     }
 
