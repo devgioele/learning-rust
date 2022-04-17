@@ -1,37 +1,6 @@
-extern crate scoped_threadpool;
-
 pub mod sort {
-    use scoped_threadpool::Pool;
-
-    /// Computes the media for a given arrtor of numbers.
-    /// The media is the value separating the higher half from
-    /// the lower half of a data sample.
-    ///
-    /// # Examples
-    ///
-    /// A data set with an odd number of values:
-    /// ```
-    /// use quicksort::sort::median;
-    /// let arr = [1.0,3.0,3.0,6.0,7.0,8.0,9.0];
-    /// let median = median(&arr);
-    /// assert_eq!(median, 6.0);
-    /// ```
-    ///
-    /// A data set with an even number of values:
-    /// ```
-    /// use quicksort::sort::median;
-    /// let arr = [1.0,2.0,3.0,4.0,5.0,6.0,8.0,9.0];
-    /// let median = median(&arr);
-    /// assert_eq!(median, 4.5);
-    /// ```
-    pub fn median(arr: &[f64]) -> f64 {
-        let len = arr.len();
-        return if len % 2 == 0 {
-            (arr[len / 2 - 1] + arr[len / 2]) / 2f64
-        } else {
-            arr[(len + 1) / 2 - 1]
-        };
-    }
+    use rayon::join;
+    pub use rayon::prelude::*;
 
     fn swap(arr: &mut [f64], a: usize, b: usize) {
         let old_a = arr[a];
@@ -41,12 +10,12 @@ pub mod sort {
 
     /// Unstable partitioning algorithm.
     ///
-    /// returns: index of the pivot, such that the left partition is <= the pivot and
-    /// the right partition is > the pivot.
+    /// Return the index of the pivot, such that the left partition is <= the
+    /// pivot and the right partition is > the pivot.
     fn partition_hoare(arr: &mut [f64], low: usize, high: usize) -> usize {
         let pivot = arr[(high + low) / 2];
         // Set indices taking possible overflows into account
-        let (mut left, mut skip_left) = if low == 0 {
+        let (mut left, mut skip_left) = if low == usize::MIN {
             (low, true)
         } else {
             (low - 1, false)
@@ -89,48 +58,47 @@ pub mod sort {
         right
     }
 
-    fn quicksort_rec(arr: &mut [f64], low: usize, high: usize) {
+    fn quicksort_seq_rec(arr: &mut [f64], low: usize, high: usize) {
         // Base case
         if low >= high {
             return;
         }
         // Continue by induction
         let pivot = partition_hoare(arr, low, high);
-        quicksort_rec(arr, low, pivot);
-        quicksort_rec(arr, pivot + 1, high);
+        quicksort_seq_rec(arr, low, pivot);
+        quicksort_seq_rec(arr, pivot + 1, high);
     }
 
     /// Unstable sorting of the given array.
-    pub fn quicksort(arr: &mut [f64]) {
-        quicksort_rec(arr, 0, arr.len() - 1);
+    pub fn quicksort_seq(arr: &mut [f64]) {
+        quicksort_seq_rec(arr, 0, arr.len() - 1);
     }
 
-    fn quicksort_concurrent_rec(pool: &mut Pool, arr: &mut [f64]) {
+    /// Sorts the given array using potential parallelism.
+    /// This means that at least 1 thread is used and further threads might
+    /// be used if they are available and idle.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// # use quicksort::sort::quicksort;
+    /// let mut arr = [3.0, 3.0, 9.0, 3.0, 7.0];
+    /// quicksort(&mut arr);
+    /// assert_eq!(arr, [3.0, 3.0, 3.0, 7.0, 9.0]);
+    /// ```
+    pub fn quicksort(arr: &mut [f64]) {
         let low = 0;
         let high = arr.len() - 1;
+        // Base case
+        if low >= high {
+            return;
+        }
         // Partition
         let pivot = partition_hoare(arr, low, high);
         // Split the array without copying it (uses unsafe code under the hood)
         let (left, right) = arr.split_at_mut(pivot + 1);
         // Continue by induction
-        pool.scoped(|scope| {
-            if low < pivot {
-                scope.execute(move || {
-                    quicksort_concurrent_rec(pool, left);
-                });
-            }
-            if pivot + 1 < high {
-                scope.execute(move || {
-                    quicksort_concurrent_rec(pool, right);
-                });
-            }
-        });
-    }
-
-    pub fn quicksort_concurrent(pool: &mut Pool, arr: &mut [f64]) {
-        if arr.len() > 1 {
-            quicksort_concurrent_rec(pool, arr);
-        }
+        join(|| quicksort(left), || quicksort(right));
     }
 
     #[cfg(test)]
@@ -210,54 +178,51 @@ pub mod sort {
         }
 
         #[test]
-        fn quicksort_one() {
+        fn quicksort_seq_one() {
             let mut arr = [9.7];
-            quicksort(&mut arr);
+            quicksort_seq(&mut arr);
             assert_eq!(arr, [9.7]);
         }
 
         #[test]
-        fn quicksort_two_unsorted() {
+        fn quicksort_seq_two_unsorted() {
             let mut arr = [3.4, 1.0];
-            quicksort(&mut arr);
+            quicksort_seq(&mut arr);
             assert_eq!(arr, [1.0, 3.4]);
         }
 
         #[test]
-        fn quicksort_even_sorted() {
+        fn quicksort_seq_even_sorted() {
             let mut arr = [1.0, 9.7, 3.4, 4.0];
-            quicksort(&mut arr);
+            quicksort_seq(&mut arr);
             assert_eq!(arr, [1.0, 3.4, 4.0, 9.7]);
         }
 
         #[test]
-        fn quicksort_odd_sorted() {
+        fn quicksort_seq_odd_sorted() {
             let mut arr = [1.0, 9.7, 3.4, 4.0, -3.14];
-            quicksort(&mut arr);
+            quicksort_seq(&mut arr);
             assert_eq!(arr, [-3.14, 1.0, 3.4, 4.0, 9.7]);
         }
 
         #[test]
-        fn quicksort_concurrent_serial() {
+        fn quicksort_serial() {
             let mut arr1 = [1.0, 9.7, 3.4, 4.0];
             let mut arr2 = arr1.clone();
-            let pool = Mutex::new(ThreadPool::new(2));
-            assert_eq!(quicksort(&mut arr1), quicksort_concurrent(&pool, &mut arr2));
+            assert_eq!(quicksort_seq(&mut arr1), quicksort(&mut arr2));
         }
 
         #[test]
-        fn quicksort_even_unsorted_concurrent() {
+        fn quicksort_seq_even_unsorted_concurrent() {
             let mut arr = [1.0, 9.7, 3.4, 4.0];
-            let pool = Mutex::new(ThreadPool::new(2));
-            quicksort_concurrent(&pool, &mut arr);
+            quicksort(&mut arr);
             assert_eq!(arr, [1.0, 3.4, 4.0, 9.7]);
         }
 
         #[test]
-        fn quicksort_odd_unsorted_concurrent() {
+        fn quicksort_seq_odd_unsorted_concurrent() {
             let mut arr = [1.0, 9.7, 3.4, 4.0, -3.14];
-            let pool = Mutex::new(ThreadPool::new(2));
-            quicksort_concurrent(&pool, &mut arr);
+            quicksort(&mut arr);
             assert_eq!(arr, [-3.14, 1.0, 3.4, 4.0, 9.7]);
         }
     }
