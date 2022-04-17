@@ -213,14 +213,14 @@ pub mod sort {
         }
 
         #[test]
-        fn quicksort_seq_even_unsorted_concurrent() {
+        fn quicksort_even_unsorted_concurrent() {
             let mut arr = [1.0, 9.7, 3.4, 4.0];
             quicksort(&mut arr);
             assert_eq!(arr, [1.0, 3.4, 4.0, 9.7]);
         }
 
         #[test]
-        fn quicksort_seq_odd_unsorted_concurrent() {
+        fn quicksort_odd_unsorted_concurrent() {
             let mut arr = [1.0, 9.7, 3.4, 4.0, -3.14];
             quicksort(&mut arr);
             assert_eq!(arr, [-3.14, 1.0, 3.4, 4.0, 9.7]);
