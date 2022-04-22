@@ -6,12 +6,6 @@ pub mod sort {
         arr[(low + high) / 2]
     }
 
-    fn swap(arr: &mut [f64], a: usize, b: usize) {
-        let old_a = arr[a];
-        arr[a] = arr[b];
-        arr[b] = old_a;
-    }
-
     /// Unstable partitioning algorithm.
     ///
     /// Return the index of the pivot, such that the left partition is <= the
@@ -57,7 +51,7 @@ pub mod sort {
             if left >= right {
                 break;
             }
-            swap(arr, left, right);
+            arr.swap(left, right);
         }
         right
     }
@@ -109,6 +103,34 @@ pub mod sort {
     #[cfg(test)]
     mod tests {
         use super::*;
+        use rand::Rng;
+
+        fn is_sorted(arr: &[f64]) -> bool {
+            for i in 1..arr.len() {
+                if arr[i - 1] > arr[i] {
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        #[test]
+        fn sorted_1() {
+            let arr = [4.3];
+            assert!(is_sorted(&arr));
+        }
+
+        #[test]
+        fn sorted_3() {
+            let arr = [-2.0, 0.0, 1.0];
+            assert!(is_sorted(&arr));
+        }
+
+        #[test]
+        fn not_sorted() {
+            let arr = [1.2, 1.0];
+            assert!(!is_sorted(&arr));
+        }
 
         mod partition {
             use super::*;
@@ -229,6 +251,25 @@ pub mod sort {
             let mut arr = [1.0, 9.7, 3.4, 4.0, -3.14];
             quicksort(&mut arr);
             assert_eq!(arr, [-3.14, 1.0, 3.4, 4.0, 9.7]);
+        }
+
+        /// Generates a vector of the given size with random values ranging from
+        /// `min` to `max`, inclusive.
+        fn gen_rnd_vec(size: usize, min: f64, max: f64) -> Vec<f64> {
+            let mut rng = rand::thread_rng();
+            let mut vec = vec![0.0; size];
+            for i in 0..size {
+                vec[i] = rng.gen_range(min..=max);
+            }
+            vec
+        }
+
+        #[test]
+        fn quicksort_big_concurrent() {
+            let mut vec = gen_rnd_vec(100_000, 0.0, 100.0);
+            let arr = &mut vec[..];
+            quicksort(arr);
+            assert!(is_sorted(arr));
         }
     }
 }
